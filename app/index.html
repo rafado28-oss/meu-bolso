@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Meu Bolso</title>
   <meta name="description" content="Meu Bolso: quanto eu já gastei este mês, por categoria.">
-  <meta name="theme-color" content="#0b0b0b">
+  <meta name="theme-color" content="#05070d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Meu Bolso">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icone.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icone.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap">
   <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
@@ -21,7 +24,7 @@
     <div class="marca">
       <img src="icone.svg" alt="" width="80" height="80">
       <h1>Meu Bolso</h1>
-      <p>Quanto você já gastou este mês, num relance.</p>
+      <p>Seus gastos do mês, num relance. Com IA.</p>
     </div>
 
     <form id="form-entrada" class="formulario" novalidate>
@@ -46,6 +49,7 @@
         <img src="icone.svg" alt="" width="36" height="36">
         <h1>Meu Bolso</h1>
       </div>
+      <span class="status">online</span>
       <button id="botao-sair" type="button" class="botao-discreto">Sair</button>
     </header>
 
@@ -93,7 +97,7 @@
     <section class="cartao" aria-labelledby="titulo-assistente">
       <div class="cabecalho-cartao">
         <h2 id="titulo-assistente">Assistente</h2>
-        <span class="selo">Chega na sexta</span>
+        <span class="selo">Gemini</span>
       </div>
       <form id="form-assistente" novalidate>
         <label class="campo">
