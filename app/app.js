@@ -438,10 +438,130 @@
     desenhar();
   }
 
-  // ---------- Assistente (chega na sexta) ----------
+  // ---------- Assistente (frase, pergunta ou foto do cupom) ----------
 
-  function avisoAssistente() {
-    avisar($("aviso-assistente"), "O assistente chega na sexta.", "ok");
+  const LADO_MAXIMO_FOTO = 1600;
+  const ASSISTENTE_FORA = "O assistente não respondeu agora. Espere um instante e tente de novo, ou lance à mão.";
+
+  // Campo de arquivo invisível: o botão Foto do cupom abre a câmera ou a galeria.
+  const campoFoto = el("input");
+  campoFoto.type = "file";
+  campoFoto.accept = "image/*";
+  campoFoto.hidden = true;
+  document.body.append(campoFoto);
+
+  function travarAssistente(sim) {
+    for (const botao of $("form-assistente").querySelectorAll("button")) botao.disabled = sim;
+  }
+
+  async function abrirImagem(arquivo) {
+    if (window.createImageBitmap) {
+      try {
+        return await createImageBitmap(arquivo, { imageOrientation: "from-image" });
+      } catch (_) {
+        // Alguns navegadores não abrem assim; tenta do jeito antigo.
+      }
+    }
+    const endereco = URL.createObjectURL(arquivo);
+    try {
+      const imagem = new Image();
+      imagem.src = endereco;
+      await imagem.decode();
+      return imagem;
+    } finally {
+      URL.revokeObjectURL(endereco);
+    }
+  }
+
+  // Reduz a foto no aparelho (no máximo 1600 px, em JPEG) e devolve só o conteúdo em base64.
+  // Nada é guardado: a foto só existe na memória até o envio.
+  async function reduzirFoto(arquivo) {
+    const imagem = await abrirImagem(arquivo);
+    const largura = imagem.naturalWidth || imagem.width;
+    const altura = imagem.naturalHeight || imagem.height;
+    const escala = Math.min(1, LADO_MAXIMO_FOTO / Math.max(largura, altura));
+    const tela = document.createElement("canvas");
+    tela.width = Math.round(largura * escala);
+    tela.height = Math.round(altura * escala);
+    tela.getContext("2d").drawImage(imagem, 0, 0, tela.width, tela.height);
+    if (imagem.close) imagem.close();
+    const conteudo = tela.toDataURL("image/jpeg", 0.85).split(",")[1];
+    tela.width = tela.height = 0;
+    return conteudo;
+  }
+
+  // Manda o pedido para a função, com o login da sessão. Devolve a resposta, ou null se deu erro.
+  async function falarComAssistente(pedido) {
+    const aviso = $("aviso-assistente");
+    const { data } = await banco.auth.getSession();
+    const token = data && data.session ? data.session.access_token : null;
+    if (!token) {
+      avisar(aviso, "Sua entrada expirou. Toque em Sair, entre de novo e repita.", "erro");
+      return null;
+    }
+
+    travarAssistente(true);
+    avisar(aviso, pedido.imagem ? "Lendo o cupom…" : "Pensando…", "ok");
+    let resposta;
+    let corpo = null;
+    try {
+      resposta = await fetch("/api/assistente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...pedido, categorias: CONFIG.CATEGORIAS }),
+      });
+      corpo = await resposta.json().catch(() => null);
+    } catch (erro) {
+      travarAssistente(false);
+      avisar(aviso, semConexao(erro) ? "Sem conexão com a internet. Confira a rede e tente de novo." : ASSISTENTE_FORA, "erro");
+      return null;
+    }
+    travarAssistente(false);
+
+    if (!resposta.ok || !corpo || !corpo.resposta) {
+      avisar(aviso, (corpo && corpo.erro) || ASSISTENTE_FORA, "erro");
+      return null;
+    }
+    avisar(aviso, corpo.resposta, "ok");
+
+    // Depois de lançar, a lista, o total e as barras se atualizam.
+    const novos = (corpo.gastos || []).filter((g) => noMesAtual(g.data));
+    if (novos.length) {
+      estado.gastos.push(...novos);
+      ordenar();
+      desenhar();
+    }
+    return corpo;
+  }
+
+  async function enviarFrase() {
+    const campo = $("frase");
+    const mensagem = campo.value.trim();
+    if (!mensagem) {
+      avisar($("aviso-assistente"), "Escreva o gasto ou a pergunta. Ex.: mercado 50 hoje.", "erro");
+      return campo.focus();
+    }
+    const corpo = await falarComAssistente({ mensagem });
+    if (corpo && corpo.gastos && corpo.gastos.length) campo.value = "";
+  }
+
+  async function enviarFoto() {
+    const arquivo = campoFoto.files && campoFoto.files[0];
+    campoFoto.value = ""; // solta o arquivo escolhido: a foto não fica guardada
+    if (!arquivo) return;
+
+    const aviso = $("aviso-assistente");
+    travarAssistente(true);
+    avisar(aviso, "Preparando a foto…", "ok");
+    let imagem;
+    try {
+      imagem = await reduzirFoto(arquivo);
+    } catch (_) {
+      travarAssistente(false);
+      return avisar(aviso, "Não consegui abrir essa foto. Tire outra ou escolha outra foto e tente de novo.", "erro");
+    }
+    const corpo = await falarComAssistente({ mensagem: $("frase").value.trim(), imagem, mime: "image/jpeg" });
+    if (corpo && corpo.gastos && corpo.gastos.length) $("frase").value = "";
   }
 
   // ---------- Ligações ----------
@@ -464,9 +584,10 @@
 
   $("form-assistente").addEventListener("submit", (evento) => {
     evento.preventDefault();
-    avisoAssistente();
+    enviarFrase();
   });
-  $("botao-foto").addEventListener("click", avisoAssistente);
+  $("botao-foto").addEventListener("click", () => campoFoto.click());
+  campoFoto.addEventListener("change", enviarFoto);
 
   // Ao voltar para o app (por exemplo, no dia seguinte), atualiza tudo.
   document.addEventListener("visibilitychange", () => {
