@@ -346,7 +346,8 @@
     travarCategorias(true);
     const { data: linha, error } = await banco
       .from("gastos")
-      .insert({ data, descricao: descricao || null, valor, categoria, origem: "manual" })
+      // A coluna descricao não aceita "nada": quando fica em branco, vai texto vazio.
+      .insert({ data, descricao, valor, categoria, origem: "manual" })
       .select(COLUNAS)
       .single();
     travarCategorias(false);
