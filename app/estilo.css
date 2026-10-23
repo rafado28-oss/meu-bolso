@@ -1,0 +1,438 @@
+/* Meu Bolso — aparência.
+   Preto e dourado, celular de 390 px primeiro.
+   Nenhum texto menor que 16 px; nenhum botão menor que 48 px de altura. */
+
+:root {
+  --preto: #0b0b0b;
+  --fundo-campo: #0f0e0c;
+  --cartao: #161512;
+  --borda: #2e2a20;
+  --trilho: #2a261c;
+  --dourado: #d4af37;
+  --dourado-forte: #f0cd5c;
+  --dourado-escuro: #8a6d1d;
+  --texto: #f2ead6;
+  --texto-suave: #bfb59c;
+  --erro: #ff9a8a;
+  --raio: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--preto);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.tela {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px calc(112px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Tela de entrada ---------- */
+
+.entrada {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  padding-bottom: 32px;
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.marca h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--dourado);
+}
+
+.marca p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.formulario {
+  display: grid;
+  gap: 14px;
+}
+
+/* ---------- Campos e botões ---------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.opcional {
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--fundo-campo);
+  border: 2px solid var(--borda);
+  border-radius: 12px;
+}
+
+input::placeholder { color: #8f8670; }
+
+input:focus {
+  outline: none;
+  border-color: var(--dourado);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+}
+
+button {
+  min-height: 52px;
+  padding: 12px 18px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--dourado);
+  background: transparent;
+  border: 2px solid var(--dourado);
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active { background: rgba(212, 175, 55, 0.15); }
+
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--dourado-forte);
+  outline-offset: 3px;
+}
+
+.botao-principal {
+  color: var(--preto);
+  background: var(--dourado);
+}
+
+.botao-principal:active { background: var(--dourado-forte); }
+
+.botao-discreto {
+  min-height: 48px;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: var(--texto-suave);
+  border-color: var(--borda);
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso {
+  margin: 12px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.aviso.erro { color: var(--erro); }
+.aviso.ok { color: var(--dourado); }
+
+.dica {
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: var(--texto-suave);
+}
+
+/* ---------- Topo e total ---------- */
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topo-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topo h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--dourado);
+}
+
+.total { padding: 20px 0 8px; }
+
+.total-rotulo {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.total-valor {
+  margin: 2px 0 0;
+  font-size: clamp(2.75rem, 13vw, 4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--dourado);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.total-dica {
+  margin: 6px 0 0;
+  font-size: 16px;
+  color: var(--texto-suave);
+}
+
+.total button { margin-top: 12px; }
+
+/* ---------- Cartões ---------- */
+
+.cartao {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.cartao h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.cabecalho-cartao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cabecalho-cartao h2 { margin: 0; }
+
+.selo {
+  padding: 4px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--preto);
+  background: var(--dourado);
+  border-radius: 999px;
+}
+
+/* ---------- Barras por categoria ---------- */
+
+.barras {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barra-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 16px;
+}
+
+.barra-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra-trilho {
+  height: 8px;
+  margin-top: 4px;
+  overflow: hidden;
+  background: var(--trilho);
+  border-radius: 999px;
+}
+
+.barra-preenchida {
+  height: 100%;
+  background: var(--dourado);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+/* ---------- Lançar à mão ---------- */
+
+.campo-valor input {
+  min-height: 64px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--dourado);
+  font-variant-numeric: tabular-nums;
+}
+
+.grade-categorias {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.grade-categorias button {
+  min-height: 56px;
+  padding: 8px;
+  overflow-wrap: anywhere;
+}
+
+.detalhes {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borda);
+}
+
+.detalhes .dica { margin: 0; }
+
+/* ---------- Assistente ---------- */
+
+.linha-botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ---------- Resumo da semana ---------- */
+
+.cartao-resumo { border-color: var(--dourado-escuro); }
+
+.texto-resumo {
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* ---------- Lista do mês ---------- */
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.item-titulo {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.item-valor {
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--dourado);
+  font-variant-numeric: tabular-nums;
+}
+
+.item-detalhe {
+  font-size: 16px;
+  color: var(--texto-suave);
+}
+
+.item button {
+  justify-self: end;
+  min-height: 48px;
+  padding: 8px 14px;
+  font-size: 16px;
+  color: var(--texto-suave);
+  border-color: var(--borda);
+}
+
+.item button.confirmar {
+  color: var(--erro);
+  border-color: var(--erro);
+}
+
+/* ---------- Faixa do Desfazer ---------- */
+
+.faixa {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: calc(100% - 32px);
+  max-width: 448px;
+  padding: 10px 10px 10px 16px;
+  font-weight: 700;
+  color: var(--preto);
+  background: var(--dourado);
+  border-radius: var(--raio);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+}
+
+.faixa button {
+  min-height: 48px;
+  color: var(--dourado);
+  background: var(--preto);
+  border-color: var(--preto);
+}
+
+/* ---------- Computador ---------- */
+
+@media (min-width: 768px) {
+  .tela { padding-top: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-preenchida { transition: none; }
+}

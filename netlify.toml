@@ -1,0 +1,4 @@
+# Publica só a pasta app. As funções do assistente (sexta) vão morar em netlify/functions.
+[build]
+  publish = "app"
+  functions = "netlify/functions"
