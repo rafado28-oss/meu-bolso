@@ -578,6 +578,68 @@
     if (corpo && corpo.gastos && corpo.gastos.length) $("frase").value = "";
   }
 
+  // ---------- Microfone (reconhecimento de voz do navegador) ----------
+
+  // Quem transforma a voz em texto é o navegador; o app não grava nem guarda o áudio.
+  const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let escuta = null; // o reconhecimento em andamento, ou null
+
+  function fraseDoMicrofone(codigo) {
+    const bloqueado = "O navegador não deixou usar o microfone. Permita o microfone para este site e tente de novo.";
+    const frases = {
+      "not-allowed": bloqueado,
+      "service-not-allowed": bloqueado,
+      "no-speech": "Não ouvi nada. Toque em Falar e diga o gasto.",
+      "audio-capture": "Não achei o microfone. Confira o microfone do aparelho e tente de novo.",
+      network: "O reconhecimento de voz precisa de internet. Confira a rede e tente de novo.",
+    };
+    return frases[codigo] || "Não entendi o que você disse. Tente de novo ou escreva o gasto.";
+  }
+
+  function mostrarEscutando(sim) {
+    const botao = $("botao-microfone");
+    botao.setAttribute("aria-pressed", String(sim));
+    botao.textContent = sim ? "Ouvindo…" : "Falar";
+  }
+
+  function falar() {
+    // Tocar de novo enquanto escuta: para de ouvir e envia o que já ouviu.
+    if (escuta) return escuta.stop();
+
+    const aviso = $("aviso-assistente");
+    const campo = $("frase");
+    const reconhecimento = new Reconhecimento();
+    reconhecimento.lang = "pt-BR";
+    reconhecimento.interimResults = true; // o texto aparece no campo enquanto a pessoa fala
+    reconhecimento.maxAlternatives = 1;
+    let ouvido = "";
+    let erro = null;
+
+    reconhecimento.onresult = (evento) => {
+      ouvido = Array.from(evento.results, (resultado) => resultado[0].transcript).join("").trim();
+      campo.value = ouvido;
+    };
+    reconhecimento.onerror = (evento) => {
+      erro = evento.error;
+    };
+    reconhecimento.onend = () => {
+      escuta = null;
+      mostrarEscutando(false);
+      if (erro && erro !== "aborted") return avisar(aviso, fraseDoMicrofone(erro), "erro");
+      if (!ouvido) return avisar(aviso, fraseDoMicrofone("no-speech"), "erro");
+      enviarFrase();
+    };
+
+    try {
+      reconhecimento.start();
+    } catch (_) {
+      return avisar(aviso, fraseDoMicrofone(), "erro");
+    }
+    escuta = reconhecimento;
+    mostrarEscutando(true);
+    avisar(aviso, "Pode falar…", "ok");
+  }
+
   // ---------- Ligações ----------
 
   montarCategorias();
@@ -602,6 +664,14 @@
   });
   $("botao-foto").addEventListener("click", () => campoFoto.click());
   campoFoto.addEventListener("change", enviarFoto);
+
+  if (Reconhecimento) {
+    $("botao-microfone").addEventListener("click", falar);
+  } else {
+    // Sem reconhecimento de voz no navegador: o botão some e fica a dica do teclado.
+    $("botao-microfone").hidden = true;
+    $("dica-microfone").hidden = false;
+  }
 
   // Ao voltar para o app (por exemplo, no dia seguinte), atualiza tudo.
   document.addEventListener("visibilitychange", () => {

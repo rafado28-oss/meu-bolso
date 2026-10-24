@@ -100,10 +100,12 @@
         <span class="selo">Gemini</span>
       </div>
       <form id="form-assistente" novalidate>
-        <label class="campo">
-          Diga o gasto numa frase
+        <label class="campo" for="frase">Diga o gasto numa frase</label>
+        <div class="linha-frase">
           <input id="frase" name="frase" type="text" placeholder="Ex.: almocei por 25 reais" autocomplete="off">
-        </label>
+          <button id="botao-microfone" type="button" aria-pressed="false">Falar</button>
+        </div>
+        <p id="dica-microfone" class="dica" hidden>Use o microfone do teclado do celular.</p>
         <div class="linha-botoes">
           <button type="submit">Enviar</button>
           <button id="botao-foto" type="button">Foto do cupom</button>

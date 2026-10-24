@@ -620,6 +620,26 @@ section[aria-labelledby="titulo-assistente"] h2::after {
 
 #botao-foto::before { content: "📷 "; }
 
+/* Campo da frase com o botão Falar ao lado: o campo encolhe para caber o botão. */
+.linha-frase {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.linha-frase input { flex: 1; min-width: 0; }
+
+#botao-microfone { flex: none; }
+
+#botao-microfone::before { content: "🎤 "; }
+
+/* Enquanto escuta: borda vermelha, para ficar claro que o microfone está ligado. */
+#botao-microfone[aria-pressed="true"] {
+  color: var(--erro);
+  border-color: var(--erro);
+  box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.16);
+}
+
 /* ---------- Resumo da semana ---------- */
 
 .cartao-resumo {
