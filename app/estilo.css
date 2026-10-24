@@ -10,7 +10,7 @@
   --vidro: rgba(16, 22, 40, 0.62);
   --vidro-forte: rgba(20, 28, 52, 0.85);
   --linha: rgba(120, 160, 255, 0.14);
-  --linha-forte: rgba(120, 160, 255, 0.28);
+  --linha-forte: rgba(120, 160, 255, 0.6); /* 3,4 para 1 sobre o cartão: dá para ver onde tocar */
   --ciano: #22d3ee;
   --ciano-forte: #67e8f9;
   --violeta: #8b5cf6;
@@ -187,7 +187,7 @@ input {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-input::placeholder { color: #5f6f90; }
+input::placeholder { color: #7d8db0; } /* 5,9 para 1, ainda mais apagado que o texto suave */
 
 input:focus {
   outline: none;
@@ -230,7 +230,7 @@ button:focus-visible {
 
 .botao-principal,
 #form-assistente button[type="submit"] {
-  color: #04121a;
+  color: #000; /* preto puro: passa de 4,5 para 1 até sobre o violeta do degradê */
   background: var(--gradiente);
   background-size: 160% 100%;
   border: 0;
@@ -606,7 +606,7 @@ section[aria-labelledby="titulo-assistente"] h2::after {
   padding: 0 8px;
   font-family: var(--fonte-numero);
   font-size: 16px;
-  color: #04121a;
+  color: #000;
   background: var(--gradiente);
   border-radius: 6px;
 }

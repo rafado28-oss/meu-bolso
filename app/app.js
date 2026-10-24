@@ -43,6 +43,16 @@
     alvo.hidden = !frase;
   }
 
+  // O cliente do Supabase costuma devolver { error } quando algo dá errado.
+  // Se em vez disso ele lançar uma exceção, tratamos do mesmo jeito: nada fica travado e o erro vira frase.
+  async function seguro(pedido) {
+    try {
+      return await pedido;
+    } catch (erro) {
+      return { data: null, error: erro };
+    }
+  }
+
   // Data "AAAA-MM-DD" no fuso do aparelho (não no fuso de Londres).
   function dataLocal(d) {
     const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -178,9 +188,10 @@
   async function sair() {
     const botao = $("botao-sair");
     botao.disabled = true;
-    const { error } = await banco.auth.signOut();
+    const { error } = await seguro(banco.auth.signOut());
     botao.disabled = false;
-    if (error) avisar($("aviso-lista"), "Não foi possível sair agora. Confira a internet e tente de novo.", "erro");
+    // O aviso fica logo abaixo do total, perto do botão Sair.
+    if (error) avisar($("aviso-carregar"), "Não foi possível sair agora. Confira a internet e tente de novo.", "erro");
   }
 
   // ---------- Troca de telas ----------
@@ -190,6 +201,7 @@
     $("tela-app").hidden = true;
     $("tela-entrada").hidden = false;
     $("senha").value = "";
+    avisar($("aviso-entrada"), "");
     esconderFaixa();
     $("total-mes").textContent = "—";
     $("lista").replaceChildren();
@@ -223,17 +235,19 @@
     $("aviso-carregar").hidden = true;
     $("botao-tentar").hidden = true;
 
-    const { data: linhas, error } = await banco
+    const { data: linhas, error } = await seguro(banco
       .from("gastos")
       .select(COLUNAS)
       .gte("data", inicio)
       .lt("data", proximo)
       .order("data", { ascending: false })
-      .order("criado_em", { ascending: false });
+      .order("criado_em", { ascending: false }));
 
     if (error) {
       avisar($("aviso-carregar"), fraseDoBanco(error, "carregar"), "erro");
       $("botao-tentar").hidden = false;
+      // Sem carregar, não dá para dizer que a lista está vazia.
+      $("lista-vazia").hidden = true;
       return;
     }
     estado.gastos = linhas || [];
@@ -241,12 +255,12 @@
   }
 
   async function carregarResumo() {
-    const { data: linha, error } = await banco
+    const { data: linha, error } = await seguro(banco
       .from("resumos")
       .select("texto")
       .order("criado_em", { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .maybeSingle());
     const texto = !error && linha && linha.texto ? linha.texto.trim() : "";
     $("texto-resumo").textContent = texto;
     $("cartao-resumo").hidden = !texto;
@@ -344,12 +358,12 @@
 
     avisar(aviso, "");
     travarCategorias(true);
-    const { data: linha, error } = await banco
+    const { data: linha, error } = await seguro(banco
       .from("gastos")
       // A coluna descricao não aceita "nada": quando fica em branco, vai texto vazio.
       .insert({ data, descricao, valor, categoria, origem: "manual" })
       .select(COLUNAS)
-      .single();
+      .single());
     travarCategorias(false);
 
     if (error) return avisar(aviso, fraseDoBanco(error, "lancar"), "erro");
@@ -389,7 +403,7 @@
     clearTimeout(estado.tempoFaixa);
     $("botao-desfazer").disabled = true;
 
-    const { error } = await banco.from("gastos").delete().eq("id", linha.id);
+    const { error } = await seguro(banco.from("gastos").delete().eq("id", linha.id));
     if (error) {
       $("texto-faixa").textContent = fraseDoBanco(error, "apagar");
       $("botao-desfazer").disabled = false;
@@ -424,7 +438,7 @@
     botao.disabled = true;
     botao.textContent = "Apagando…";
 
-    const { error } = await banco.from("gastos").delete().eq("id", gasto.id);
+    const { error } = await seguro(banco.from("gastos").delete().eq("id", gasto.id));
     if (error) {
       avisar(aviso, fraseDoBanco(error, "apagar"), "erro");
       botao.disabled = false;
@@ -493,7 +507,7 @@
   // Manda o pedido para a função, com o login da sessão. Devolve a resposta, ou null se deu erro.
   async function falarComAssistente(pedido) {
     const aviso = $("aviso-assistente");
-    const { data } = await banco.auth.getSession();
+    const { data } = await seguro(banco.auth.getSession());
     const token = data && data.session ? data.session.access_token : null;
     if (!token) {
       avisar(aviso, "Sua entrada expirou. Toque em Sair, entre de novo e repita.", "erro");
@@ -595,6 +609,14 @@
     if (!$("valor").value) $("data").value = dataLocal(new Date());
     carregarTudo();
   });
+
+  // Se o Supabase não disser em 8 segundos se há alguém entrado, mostra a tela de entrada com uma frase,
+  // em vez de deixar a tela em branco. Se a resposta chegar depois, o app abre normalmente.
+  setTimeout(() => {
+    if (estado.usuarioId !== undefined) return;
+    $("tela-entrada").hidden = false;
+    avisar($("aviso-entrada"), "O app está demorando para abrir. Confira a internet e recarregue a página.", "erro");
+  }, 8000);
 
   banco.auth.onAuthStateChange((_evento, sessao) => {
     const id = sessao ? sessao.user.id : null;
